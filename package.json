@@ -1,0 +1,35 @@
+{
+  "name": "@elmp/create-hi-app",
+  "version": "1.1.0",
+  "description": "Scaffold a production-minded House Innovation Next.js application.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-hi-app": "bin/create-hi-app.js"
+  },
+  "files": [
+    "bin",
+    "template",
+    "README.md",
+    "CHANGELOG.md",
+    "UPGRADING.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "pack:check": "npm pack --dry-run"
+  },
+  "keywords": [
+    "create",
+    "nextjs",
+    "prisma",
+    "house-innovation",
+    "starter"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

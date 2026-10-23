@@ -1,0 +1,53 @@
+name: Template verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  generator:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app_test
+          POSTGRES_PASSWORD: app_test
+          POSTGRES_DB: generated_test
+        ports: [5433:5432]
+        options: >-
+          --health-cmd "pg_isready -U app_test -d generated_test" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: npm install --ignore-scripts
+      - run: npm test
+      - run: npm pack
+      - run: npm exec --yes --package=./elmp-create-hi-app-1.1.0.tgz -- create-hi-app generated --skip-install --no-git
+      - run: npm ci
+        working-directory: generated
+      - run: cp .env.example .env
+        working-directory: generated
+      - run: cp .env.test.example .env.test
+        working-directory: generated
+      - run: npm run db:generate
+        working-directory: generated
+      - run: npm exec --yes --package=../elmp-create-hi-app-1.1.0.tgz -- create-hi-app generate module orders
+        working-directory: generated
+      - run: npm exec --yes --package=../elmp-create-hi-app-1.1.0.tgz -- create-hi-app generate module settings --simple
+        working-directory: generated
+      - run: npx prettier --write src/modules/orders src/modules/settings
+        working-directory: generated
+      - run: npx playwright install --with-deps chromium
+        working-directory: generated
+      - run: npm run test:all
+        working-directory: generated
+      - run: npm run build
+        working-directory: generated
+      - run: docker build -t hi-template:ci .
+        working-directory: generated
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: template-playwright-report, path: generated/playwright-report/ }

@@ -1,0 +1,14 @@
+services:
+  db-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app_test
+      POSTGRES_PASSWORD: app_test
+      POSTGRES_DB: __PROJECT_NAME___test
+    ports: ["127.0.0.1:5433:5432"]
+    tmpfs: ["/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_test -d __PROJECT_NAME___test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
